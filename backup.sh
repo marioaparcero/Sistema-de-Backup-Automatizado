@@ -15,6 +15,7 @@ BACKUP_DIR="$BACKUP_BASE/daily/$DATE"
 CHECKSUM_FILE="$BACKUP_DIR/checksums.sha256"
 LOG_FILE="$LOG_DIR/backup_$DATE.log"
 # REMOTE_DEST="user@remote-server:/remote/backups"
+# EMAIL="admin@empresa.com"
 
 mkdir -p "$BACKUP_DIR" "$LOG_DIR"
 
@@ -36,5 +37,8 @@ rsync -az "$BACKUP_DIR" "$REMOTE_DEST" &>> "$LOG_FILE"
 # ROTACIÓN DE COPIAS
 echo "[INFO] Ejecutando rotación (retención de $RETENTION_DAYS días)..." | tee -a "$LOG_FILE"
 find "$BACKUP_BASE/daily/" -maxdepth 1 -type d -mtime +$RETENTION_DAYS -exec rm -rf {} \; >> "$LOG_FILE"
+
+# ENVÍO DE NOTIFICACIÓN
+echo "Backup completado el $DATE. Ver log adjunto." | mail -s "Backup Diario Completado" -a "$LOG_FILE" "$EMAIL"
 
 echo "[INFO] Backup finalizado correctamente." | tee -a "$LOG_FILE"
